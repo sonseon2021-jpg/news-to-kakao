@@ -6,7 +6,6 @@
 - NAVER_CLIENT_ID
 - NAVER_CLIENT_SECRET
 - KAKAO_REST_API_KEY
-- KAKAO_CLIENT_SECRET
 - KAKAO_REFRESH_TOKEN
 """
 
@@ -40,8 +39,8 @@ def clean_title(raw_title: str) -> str:
 def search_naver_news(query: str):
     url = "https://openapi.naver.com/v1/search/news.json"
     headers = {
-        "X-Naver-Client-Id": NAVER_CLIENT_ID,
-        "X-Naver-Client-Secret": NAVER_CLIENT_SECRET,
+        "X-NCP-APIGW-API-KEY-ID": NAVER_CLIENT_ID,
+        "X-NCP-APIGW-API-KEY": NAVER_CLIENT_SECRET,
     }
     params = {"query": query, "display": 20, "sort": "date"}
     res = requests.get(url, headers=headers, params=params, timeout=10)
