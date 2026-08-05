@@ -96,6 +96,9 @@ def send_kakao_message(access_token: str, title: str, link: str):
     }
     data = {"template_object": json.dumps(template, ensure_ascii=False)}
     res = requests.post(url, headers=headers, data=data, timeout=10)
+    if res.status_code != 200:
+        print("카카오 응답 코드:", res.status_code)
+        print("카카오 응답 내용:", res.text)
     res.raise_for_status()
 
 
