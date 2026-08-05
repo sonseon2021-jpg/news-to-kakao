@@ -78,13 +78,14 @@ def get_kakao_access_token() -> str:
 
 
 def send_kakao_message(access_token: str, title: str, link: str):
-    # 링크를 별도 버튼(link 필드)이 아니라 본문 텍스트에 그대로 포함시켜서,
-    # 카카오의 '웹 도메인 등록' 제한 없이도 자동으로 눌러서 이동 가능하게 합니다.
+    # 카카오의 텍스트 템플릿은 link 필드가 필수라서, 이미 등록된 더미 주소를 넣고
+    # 실제 기사 링크는 본문 텍스트에 그대로 포함시킵니다 (도메인 등록 불필요).
     url = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
     headers = {"Authorization": f"Bearer {access_token}"}
     template = {
         "object_type": "text",
         "text": f"{title}\n{link}",
+        "link": {"web_url": "http://localhost:5000", "mobile_web_url": "http://localhost:5000"},
     }
     data = {"template_object": json.dumps(template, ensure_ascii=False)}
     res = requests.post(url, headers=headers, data=data, timeout=10)
