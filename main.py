@@ -6,6 +6,7 @@
 - NAVER_CLIENT_ID
 - NAVER_CLIENT_SECRET
 - KAKAO_REST_API_KEY
+- KAKAO_CLIENT_SECRET
 - KAKAO_REFRESH_TOKEN
 """
 
@@ -17,6 +18,7 @@ import requests
 NAVER_CLIENT_ID = os.environ["NAVER_CLIENT_ID"]
 NAVER_CLIENT_SECRET = os.environ["NAVER_CLIENT_SECRET"]
 KAKAO_REST_API_KEY = os.environ["KAKAO_REST_API_KEY"]
+KAKAO_CLIENT_SECRET = os.environ["KAKAO_CLIENT_SECRET"]
 KAKAO_REFRESH_TOKEN = os.environ["KAKAO_REFRESH_TOKEN"]
 
 SENT_LINKS_FILE = "sent_links.json"
@@ -76,6 +78,7 @@ def get_kakao_access_token() -> str:
     data = {
         "grant_type": "refresh_token",
         "client_id": KAKAO_REST_API_KEY,
+        "client_secret": KAKAO_CLIENT_SECRET,
         "refresh_token": KAKAO_REFRESH_TOKEN,
     }
     res = requests.post(url, data=data, timeout=10)
