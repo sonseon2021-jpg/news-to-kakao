@@ -1,11 +1,12 @@
 """
-동아일보 / 채널A 발 '단독' 뉴스를 네이버 뉴스 검색에서 찾아
-카카오톡(나에게 보내기)으로 전달하는 스크립트.
+'동아일보' 또는 '채널A'라는 단어가 들어간 뉴스를(어느 언론사 기사든) 네이버 뉴스 검색에서
+찾아 카카오톡(나에게 보내기)으로 전달하는 스크립트.
 
 필요한 환경변수 (GitHub Secrets에 등록):
 - NAVER_CLIENT_ID
 - NAVER_CLIENT_SECRET
 - KAKAO_REST_API_KEY
+- KAKAO_CLIENT_SECRET
 - KAKAO_REFRESH_TOKEN
 """
 
@@ -23,13 +24,10 @@ KAKAO_REFRESH_TOKEN = os.environ["KAKAO_REFRESH_TOKEN"]
 SENT_LINKS_FILE = "sent_links.json"
 MAX_STORED_LINKS = 500  # 파일이 무한정 커지지 않도록 최근 N개만 보관
 
-# 언론사 도메인으로 판별 (제목 텍스트보다 정확함)
-SOURCE_DOMAINS = {
-    "동아일보": ["donga.com"],
-    "채널A": ["ichannela.com", "dongascience.com"],  # 채널A 자체 도메인 확인 필요시 조정
-}
+SEARCH_QUERIES = ["동아일보", "채널A"]
 
-SEARCH_QUERIES = ["동아일보 단독", "채널A 단독"]
+# 이 도메인에서 나온 기사는 '동아일보/채널A 본인이 쓴 기사'이므로 제외합니다.
+EXCLUDE_DOMAINS = ["donga.com", "ichannela.com", "dongascience.com"]
 
 
 def clean_title(raw_title: str) -> str:
@@ -48,15 +46,9 @@ def search_naver_news(query: str):
     return res.json().get("items", [])
 
 
-def is_target_article(item: dict) -> bool:
-    title = clean_title(item["title"])
+def is_other_outlet_article(item: dict) -> bool:
     link = item.get("originallink", "") + item.get("link", "")
-    if "단독" not in title:
-        return False
-    for domains in SOURCE_DOMAINS.values():
-        if any(domain in link for domain in domains):
-            return True
-    return False
+    return not any(domain in link for domain in EXCLUDE_DOMAINS)
 
 
 def load_sent_links() -> set:
@@ -86,13 +78,13 @@ def get_kakao_access_token() -> str:
 
 
 def send_kakao_message(access_token: str, title: str, link: str):
+    # 링크를 별도 버튼(link 필드)이 아니라 본문 텍스트에 그대로 포함시켜서,
+    # 카카오의 '웹 도메인 등록' 제한 없이도 자동으로 눌러서 이동 가능하게 합니다.
     url = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
     headers = {"Authorization": f"Bearer {access_token}"}
     template = {
         "object_type": "text",
-        "text": f"[단독]\n{title}",
-        "link": {"web_url": link, "mobile_web_url": link},
-        "button_title": "기사 보기",
+        "text": f"{title}\n{link}",
     }
     data = {"template_object": json.dumps(template, ensure_ascii=False)}
     res = requests.post(url, headers=headers, data=data, timeout=10)
@@ -111,12 +103,12 @@ def main():
             link = item.get("originallink") or item.get("link")
             if link in sent_links:
                 continue
-            if is_target_article(item):
+            if is_other_outlet_article(item):
                 new_articles.append(item)
                 sent_links.add(link)
 
     if not new_articles:
-        print("새로운 단독 기사 없음.")
+        print("새로운 기사 없음.")
         return
 
     access_token = get_kakao_access_token()
