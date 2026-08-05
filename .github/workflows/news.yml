@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: news-to-kakao-run
+  cancel-in-progress: false
+
 jobs:
   send-news:
     runs-on: ubuntu-latest
@@ -38,4 +42,5 @@ jobs:
           git config user.email "news-bot@users.noreply.github.com"
           git add sent_links.json
           git diff --staged --quiet || git commit -m "update sent links"
+          git pull --rebase origin main
           git push
