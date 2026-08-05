@@ -37,12 +37,12 @@ def clean_title(raw_title: str) -> str:
 
 
 def search_naver_news(query: str):
-    url = "https://openapi.naver.com/v1/search/news.json"
+    url = "https://naverapihub.apigw.ntruss.com/search/v1/news"
     headers = {
         "X-NCP-APIGW-API-KEY-ID": NAVER_CLIENT_ID,
         "X-NCP-APIGW-API-KEY": NAVER_CLIENT_SECRET,
     }
-    params = {"query": query, "display": 20, "sort": "date"}
+    params = {"query": query, "display": 20, "sort": "date", "format": "json"}
     res = requests.get(url, headers=headers, params=params, timeout=10)
     res.raise_for_status()
     return res.json().get("items", [])
