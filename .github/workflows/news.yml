@@ -2,8 +2,8 @@ name: 단독 뉴스 카톡 전송
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
-  workflow_dispatch: {}
+    - cron: "*/30 * * * *"   # 30분마다 실행 (UTC 기준, GitHub Actions 특성상 실제로는 몇 분씩 지연될 수 있음)
+  workflow_dispatch: {}       # Actions 탭에서 수동 실행 버튼도 사용 가능
 
 permissions:
   contents: write
